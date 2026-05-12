@@ -518,9 +518,9 @@
                     <div class="exercise-card">
                         <div class="exercise-header" onclick="toggleExpand(${exercise.id})">
                             <div class="exercise-title">${exercise.name}</div>
-                            <div class="completion-badge">
+                            <div class="completion-badge" onclick="event.stopPropagation()">
                                 ${badges}
-                                <span class="expand-icon">▼</span>
+                                <span class="expand-icon" onclick="event.stopPropagation(); toggleExpand(${exercise.id})">▼</span>
                             </div>
                         </div>
                         <div class="exercise-content" id="content-${exercise.id}">
