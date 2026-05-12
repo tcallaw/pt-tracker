@@ -456,7 +456,7 @@
             updateStats();
         }
 
-        function toggleExercise(exerciseId) {
+        function toggleExercise(exerciseId, checkboxIndex) {
             const data = getTodayData();
             const today = getToday();
             
@@ -464,15 +464,17 @@
                 data[today].completions[exerciseId] = 0;
             }
             
-            const exercise = exercises.find(e => e.id === exerciseId);
-            const targetSessions = exercise.perform === "3 Times a Day" ? 3 : 2;
+            const currentCompletions = data[today].completions[exerciseId];
             
-            data[today].completions[exerciseId]++;
-            
-            // Don't reset, just cap at the target
-            if (data[today].completions[exerciseId] > targetSessions) {
-                data[today].completions[exerciseId] = targetSessions;
+            // If clicking on a filled checkbox, decrease count
+            if (checkboxIndex < currentCompletions) {
+                data[today].completions[exerciseId]--;
+            } 
+            // If clicking on the next empty checkbox, increase count
+            else if (checkboxIndex === currentCompletions) {
+                data[today].completions[exerciseId]++;
             }
+            // Otherwise do nothing (clicking ahead of current progress)
             
             saveTodayData(data);
             renderExercises();
@@ -505,7 +507,7 @@
                 let badges = '';
                 for (let i = 0; i < targetSessions; i++) {
                     const isDone = i < currentCompletions;
-                    badges += `<div class="check-circle ${isDone ? 'done' : ''}" onclick="toggleExercise(${exercise.id})">
+                    badges += `<div class="check-circle ${isDone ? 'done' : ''}" onclick="toggleExercise(${exercise.id}, ${i})">
                         ${isDone ? '✓' : ''}
                     </div>`;
                 }
