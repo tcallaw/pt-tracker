@@ -466,15 +466,15 @@
             
             const currentCompletions = data[today].completions[exerciseId];
             
-            // If clicking on a filled checkbox, decrease count
-            if (checkboxIndex < currentCompletions) {
+            // If clicking the last filled checkbox, decrease count by 1
+            if (checkboxIndex === currentCompletions - 1) {
                 data[today].completions[exerciseId]--;
             } 
-            // If clicking on the next empty checkbox, increase count
+            // If clicking on an empty checkbox that's next in line, increase count
             else if (checkboxIndex === currentCompletions) {
                 data[today].completions[exerciseId]++;
             }
-            // Otherwise do nothing (clicking ahead of current progress)
+            // Otherwise do nothing
             
             saveTodayData(data);
             renderExercises();
