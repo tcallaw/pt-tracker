@@ -3,7 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="PT Tracker">
     <title>PT Exercise Tracker</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%232563eb' width='100' height='100' rx='20'/><text x='50' y='70' font-size='60' text-anchor='middle' fill='white' font-family='Arial, sans-serif' font-weight='bold'>PT</text></svg>">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%232563eb' width='100' height='100' rx='20'/><text x='50' y='70' font-size='60' text-anchor='middle' fill='white' font-family='Arial, sans-serif' font-weight='bold'>PT</text></svg>">
     <style>
         * {
             margin: 0;
@@ -459,12 +464,14 @@
                 data[today].completions[exerciseId] = 0;
             }
             
+            const exercise = exercises.find(e => e.id === exerciseId);
+            const targetSessions = exercise.perform === "3 Times a Day" ? 3 : 2;
+            
             data[today].completions[exerciseId]++;
             
-            const targetSessions = exercises.find(e => e.id === exerciseId).perform === "3 Times a Day" ? 3 : 2;
-            
-            if (data[today].completions[exerciseId] >= targetSessions) {
-                data[today].completions[exerciseId] = 0;
+            // Don't reset, just cap at the target
+            if (data[today].completions[exerciseId] > targetSessions) {
+                data[today].completions[exerciseId] = targetSessions;
             }
             
             saveTodayData(data);
