@@ -200,6 +200,23 @@
             background: #dc2626;
         }
 
+        .video-container {
+            margin-top: 12px;
+            border-radius: 8px;
+            overflow: hidden;
+            display: none;
+        }
+
+        .video-container.visible {
+            display: block;
+        }
+
+        .video-container iframe {
+            width: 100%;
+            height: 250px;
+            border: none;
+        }
+
         .reset-button {
             position: fixed;
             bottom: 16px;
@@ -559,9 +576,12 @@
                                     </div>
                                 </div>
                                 ${exercise.hasVideo ? `
-                                    <button class="video-button" onclick="window.open('${exercise.videoUrl}', '_blank')">
+                                    <button class="video-button" onclick="toggleVideo(${exercise.id}, event)">
                                         📹 Watch Video Demo
                                     </button>
+                                    <div class="video-container" id="video-${exercise.id}">
+                                        <iframe src="${exercise.videoUrl}" allowfullscreen></iframe>
+                                    </div>
                                 ` : ''}
                             </div>
                         </div>
@@ -578,6 +598,12 @@
             const header = content.previousElementSibling;
             content.classList.toggle('expanded');
             header.classList.toggle('expanded');
+        }
+
+        function toggleVideo(exerciseId, event) {
+            event.stopPropagation();
+            const video = document.getElementById(`video-${exerciseId}`);
+            video.classList.toggle('visible');
         }
 
         function resetToday() {
