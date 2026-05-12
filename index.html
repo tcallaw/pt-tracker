@@ -456,7 +456,9 @@
             updateStats();
         }
 
-        function toggleExercise(exerciseId, checkboxIndex) {
+        function toggleExercise(exerciseId, checkboxIndex, event) {
+            event.stopPropagation(); // Prevent the click from bubbling to parent
+            
             const data = getTodayData();
             const today = getToday();
             
@@ -507,7 +509,7 @@
                 let badges = '';
                 for (let i = 0; i < targetSessions; i++) {
                     const isDone = i < currentCompletions;
-                    badges += `<div class="check-circle ${isDone ? 'done' : ''}" onclick="toggleExercise(${exercise.id}, ${i})">
+                    badges += `<div class="check-circle ${isDone ? 'done' : ''}" onclick="toggleExercise(${exercise.id}, ${i}, event)">
                         ${isDone ? '✓' : ''}
                     </div>`;
                 }
