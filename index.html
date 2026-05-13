@@ -200,6 +200,72 @@
             background: #dc2626;
         }
 
+        .timer-button {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            background: #10b981;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 12px;
+        }
+
+        .timer-button:active {
+            background: #059669;
+        }
+
+        .timer-display {
+            display: none;
+            margin-top: 12px;
+            padding: 20px;
+            background: #1f2937;
+            color: white;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .timer-display.active {
+            display: block;
+        }
+
+        .timer-count {
+            font-size: 48px;
+            font-weight: bold;
+            margin: 16px 0;
+        }
+
+        .timer-label {
+            font-size: 18px;
+            margin-bottom: 8px;
+            opacity: 0.9;
+        }
+
+        .timer-rep {
+            font-size: 14px;
+            opacity: 0.7;
+            margin-bottom: 16px;
+        }
+
+        .timer-stop {
+            padding: 10px 24px;
+            background: #ef4444;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 12px;
+        }
+
+        .timer-stop:active {
+            background: #dc2626;
+        }
+
         .reset-button {
             position: fixed;
             bottom: 16px;
@@ -487,27 +553,17 @@
             const today = getToday();
             const todayData = data[today];
             
-            // Count how many exercises have been done at least once
+            // Count how many exercises have at least one session done
             const exercisesStarted = Object.values(todayData.completions).filter(count => {
                 return count > 0;
             }).length;
-            
-            // Count how many exercises are fully complete (all required sessions done)
-            let fullyComplete = 0;
-            Object.keys(todayData.completions).forEach(exerciseId => {
-                const exercise = exercises.find(e => e.id == exerciseId);
-                const targetSessions = exercise.perform === "3 Times a Day" ? 3 : 2;
-                if (todayData.completions[exerciseId] >= targetSessions) {
-                    fullyComplete++;
-                }
-            });
             
             // Show current session number (1 or 2)
             const maxSessions = Math.max(...Object.values(todayData.completions), 0);
             const currentSession = Math.min(maxSessions, 2); // Cap at 2 for display
             
             document.getElementById('todayCount').textContent = currentSession;
-            document.getElementById('exercisesDone').textContent = `${fullyComplete}/${exercises.length}`;
+            document.getElementById('exercisesDone').textContent = `${exercisesStarted}/${exercises.length}`;
         }
 
         function renderExercises() {
@@ -558,6 +614,15 @@
                                         <div class="spec-value">${exercise.perform}</div>
                                     </div>
                                 </div>
+                                <button class="timer-button" onclick="startTimer(${exercise.id}, event)">
+                                    ⏱️ Start Timer
+                                </button>
+                                <div class="timer-display" id="timer-${exercise.id}">
+                                    <div class="timer-label" id="timer-label-${exercise.id}">Get Ready</div>
+                                    <div class="timer-count" id="timer-count-${exercise.id}">3</div>
+                                    <div class="timer-rep" id="timer-rep-${exercise.id}"></div>
+                                    <button class="timer-stop" onclick="stopTimer(${exercise.id}, event)">Stop</button>
+                                </div>
                                 ${exercise.hasVideo ? `
                                     <button class="video-button" onclick="window.open('${exercise.videoUrl}', '_blank')">
                                         📹 Watch Video Demo
@@ -573,17 +638,137 @@
             updateStats();
         }
 
+        let activeTimers = {};
+
+        function startTimer(exerciseId, event) {
+            event.stopPropagation();
+            
+            // Stop any existing timer for this exercise
+            if (activeTimers[exerciseId]) {
+                clearInterval(activeTimers[exerciseId]);
+            }
+            
+            const exercise = exercises.find(e => e.id === exerciseId);
+            const timerDisplay = document.getElementById(`timer-${exerciseId}`);
+            const timerLabel = document.getElementById(`timer-label-${exerciseId}`);
+            const timerCount = document.getElementById(`timer-count-${exerciseId}`);
+            const timerRep = document.getElementById(`timer-rep-${exerciseId}`);
+            
+            timerDisplay.classList.add('active');
+            
+            // Parse the repeat value to get number of reps
+            const repeatMatch = exercise.repeat.match(/(\d+)/);
+            const totalReps = repeatMatch ? parseInt(repeatMatch[0]) : 1;
+            
+            // Parse hold time
+            const holdMatch = exercise.hold ? exercise.hold.match(/(\d+)/) : null;
+            const holdSeconds = holdMatch ? parseInt(holdMatch[0]) : 0;
+            
+            let currentRep = 0;
+            let countdown = 3; // Get ready countdown
+            let phase = 'ready'; // ready, hold, rest
+            
+            timerLabel.textContent = 'Get Ready';
+            timerCount.textContent = countdown;
+            timerRep.textContent = '';
+            
+            // Play beep sound (vibrate on mobile)
+            function beep() {
+                if (navigator.vibrate) {
+                    navigator.vibrate(200);
+                }
+            }
+            
+            activeTimers[exerciseId] = setInterval(() => {
+                if (phase === 'ready') {
+                    countdown--;
+                    if (countdown > 0) {
+                        timerCount.textContent = countdown;
+                        beep();
+                    } else {
+                        // Start first rep
+                        currentRep = 1;
+                        phase = 'hold';
+                        countdown = holdSeconds;
+                        timerLabel.textContent = 'Hold';
+                        timerCount.textContent = countdown || 'GO!';
+                        timerRep.textContent = `Rep ${currentRep} of ${totalReps}`;
+                        beep();
+                    }
+                } else if (phase === 'hold') {
+                    countdown--;
+                    if (countdown > 0) {
+                        timerCount.textContent = countdown;
+                        if (countdown <= 3) beep();
+                    } else {
+                        // Hold complete
+                        beep();
+                        beep();
+                        
+                        if (currentRep >= totalReps) {
+                            // Exercise complete!
+                            timerLabel.textContent = 'Complete! ✓';
+                            timerCount.textContent = '';
+                            timerRep.textContent = '';
+                            clearInterval(activeTimers[exerciseId]);
+                            
+                            // Auto-mark checkbox
+                            const data = getTodayData();
+                            const today = getToday();
+                            if (!data[today].completions[exerciseId]) {
+                                data[today].completions[exerciseId] = 0;
+                            }
+                            const targetSessions = exercise.perform === "3 Times a Day" ? 3 : 2;
+                            if (data[today].completions[exerciseId] < targetSessions) {
+                                data[today].completions[exerciseId]++;
+                                saveTodayData(data);
+                                renderExercises();
+                            }
+                            
+                            setTimeout(() => {
+                                timerDisplay.classList.remove('active');
+                            }, 3000);
+                        } else {
+                            // Rest before next rep
+                            phase = 'rest';
+                            countdown = 5;
+                            timerLabel.textContent = 'Rest';
+                            timerCount.textContent = countdown;
+                        }
+                    }
+                } else if (phase === 'rest') {
+                    countdown--;
+                    if (countdown > 0) {
+                        timerCount.textContent = countdown;
+                    } else {
+                        // Start next rep
+                        currentRep++;
+                        phase = 'hold';
+                        countdown = holdSeconds;
+                        timerLabel.textContent = 'Hold';
+                        timerCount.textContent = countdown || 'GO!';
+                        timerRep.textContent = `Rep ${currentRep} of ${totalReps}`;
+                        beep();
+                    }
+                }
+            }, 1000);
+        }
+        
+        function stopTimer(exerciseId, event) {
+            event.stopPropagation();
+            if (activeTimers[exerciseId]) {
+                clearInterval(activeTimers[exerciseId]);
+                delete activeTimers[exerciseId];
+            }
+            const timerDisplay = document.getElementById(`timer-${exerciseId}`);
+            timerDisplay.classList.remove('active');
+        }
+
         function toggleExpand(exerciseId) {
             const content = document.getElementById(`content-${exerciseId}`);
             const header = content.previousElementSibling;
             content.classList.toggle('expanded');
             header.classList.toggle('expanded');
-        }
-
-        function toggleVideo(exerciseId, event) {
-            event.stopPropagation();
-            const video = document.getElementById(`video-${exerciseId}`);
-            video.classList.toggle('visible');
         }
 
         function resetToday() {
