@@ -367,12 +367,12 @@
     <div class="stats">
         <div class="stats-grid">
             <div class="stat-item">
-                <div class="stat-value" id="todayCount">0</div>
-                <div class="stat-label">Today's Sessions</div>
+                <div class="stat-value" id="session1Count">0/10</div>
+                <div class="stat-label">Session 1 Complete</div>
             </div>
             <div class="stat-item">
-                <div class="stat-value" id="exercisesDone">0/10</div>
-                <div class="stat-label">Exercises Complete</div>
+                <div class="stat-value" id="session2Count">0/10</div>
+                <div class="stat-label">Session 2 Complete</div>
             </div>
         </div>
     </div>
@@ -558,17 +558,23 @@
             const today = getToday();
             const todayData = data[today];
             
-            // Count how many exercises have at least one session done
-            const exercisesStarted = Object.values(todayData.completions).filter(count => {
-                return count > 0;
-            }).length;
+            // Count exercises completed for session 1 (at least 1 checkmark)
+            let session1Complete = 0;
+            // Count exercises completed for session 2 (at least 2 checkmarks)
+            let session2Complete = 0;
             
-            // Show current session number (1 or 2)
-            const maxSessions = Math.max(...Object.values(todayData.completions), 0);
-            const currentSession = Math.min(maxSessions, 2); // Cap at 2 for display
+            Object.keys(todayData.completions).forEach(exerciseId => {
+                const count = todayData.completions[exerciseId];
+                if (count >= 1) {
+                    session1Complete++;
+                }
+                if (count >= 2) {
+                    session2Complete++;
+                }
+            });
             
-            document.getElementById('todayCount').textContent = currentSession;
-            document.getElementById('exercisesDone').textContent = `${exercisesStarted}/${exercises.length}`;
+            document.getElementById('session1Count').textContent = `${session1Complete}/${exercises.length}`;
+            document.getElementById('session2Count').textContent = `${session2Complete}/${exercises.length}`;
         }
 
         function renderExercises() {
