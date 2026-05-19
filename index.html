@@ -501,8 +501,13 @@
         ];
 
         function getToday() {
-            const today = new Date();
-            return today.toISOString().split('T')[0];
+            // Get current date in Pacific Time (America/Los_Angeles)
+            const pacificTime = new Date().toLocaleString("en-US", {timeZone: "America/Los_Angeles"});
+            const today = new Date(pacificTime);
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
         }
 
         function getTodayData() {
