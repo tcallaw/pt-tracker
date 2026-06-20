@@ -52,7 +52,7 @@
 
         .stats-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: 1fr 1fr 1fr;
             gap: 16px;
             margin-top: 12px;
         }
@@ -367,12 +367,16 @@
     <div class="stats">
         <div class="stats-grid">
             <div class="stat-item">
-                <div class="stat-value" id="session1Count">0/10</div>
+                <div class="stat-value" id="session1Count">0/12</div>
                 <div class="stat-label">Session 1 Complete</div>
             </div>
             <div class="stat-item">
-                <div class="stat-value" id="session2Count">0/10</div>
+                <div class="stat-value" id="session2Count">0/12</div>
                 <div class="stat-label">Session 2 Complete</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="session3Count">0/12</div>
+                <div class="stat-label">Session 3 Complete</div>
             </div>
         </div>
     </div>
@@ -399,7 +403,7 @@
                 repeat: "10 Times",
                 hold: "5 Seconds",
                 complete: "1 Set",
-                perform: "2 Times a Day",
+                perform: "3 Times a Day",
                 hasVideo: true,
                 videoUrl: "https://hep.video/watch.php?id=323436303235303232"
             },
@@ -410,7 +414,7 @@
                 repeat: "10 Times",
                 hold: "5 Seconds",
                 complete: "1 Set",
-                perform: "2 Times a Day",
+                perform: "3 Times a Day",
                 hasVideo: true,
                 videoUrl: "https://hep.video/watch.php?id=333735343535353137"
             },
@@ -421,7 +425,7 @@
                 repeat: "10 Times",
                 hold: "5 Seconds",
                 complete: "1 Set",
-                perform: "2 Times a Day",
+                perform: "3 Times a Day",
                 hasVideo: false
             },
             {
@@ -431,7 +435,7 @@
                 repeat: "2 Times",
                 hold: "30 Seconds",
                 complete: "1 Set",
-                perform: "2 Times a Day",
+                perform: "3 Times a Day",
                 hasVideo: false
             },
             {
@@ -441,7 +445,7 @@
                 repeat: "10 Times",
                 hold: "5 Seconds",
                 complete: "1 Set",
-                perform: "2 Times a Day",
+                perform: "3 Times a Day",
                 hasVideo: true,
                 videoUrl: "https://hep.video/watch.php?id=3635323735373732"
             },
@@ -452,7 +456,7 @@
                 repeat: "10 Times",
                 hold: "5 Seconds",
                 complete: "1 Set",
-                perform: "2 Times a Day",
+                perform: "3 Times a Day",
                 hasVideo: true,
                 videoUrl: "https://hep.video/watch.php?id=363231383937353035"
             },
@@ -463,7 +467,7 @@
                 repeat: "10 Times",
                 hold: "5 Seconds",
                 complete: "1 Set",
-                perform: "2 Times a Day",
+                perform: "3 Times a Day",
                 hasVideo: true,
                 videoUrl: "https://hep.video/watch.php?id=353230303738333235"
             },
@@ -474,7 +478,7 @@
                 repeat: "10 Times",
                 hold: "5 Seconds",
                 complete: "1 Set",
-                perform: "2 Times a Day",
+                perform: "3 Times a Day",
                 hasVideo: false
             },
             {
@@ -494,9 +498,29 @@
                 repeat: "1 Time",
                 hold: "30 Seconds",
                 complete: "1 Set",
-                perform: "2 Times a Day",
+                perform: "3 Times a Day",
                 hasVideo: true,
                 videoUrl: "https://hep.video/watch.php?id=383639363336333536"
+            },
+            {
+                id: 11,
+                name: "Table Slide: External Rotation",
+                description: "Begin seated next to a table with your elbow even with your shoulder, flexed to 90 degrees, and palm flat on the table. Bend forward at the waist, keeping your elbow level with your shoulder as it slides forward, until you reach the point of stretch. Return to sitting upright and repeat. There are three progressions: first the basic slide described above, then an isometric version where you tighten the shoulder at the point of stretch as if trying to lift off the table, and finally a lift version where you tighten, lift off the table, and sit back upright while keeping your arm fixed relative to your body throughout.",
+                repeat: "5 Times",
+                hold: "10 Seconds",
+                complete: "1 Set",
+                perform: "3 Times a Day",
+                hasVideo: false
+            },
+            {
+                id: 12,
+                name: "Shoulder External Rotation - Cactus Stretch",
+                description: "Stand facing a door frame and place your whole forearm on the frame with your elbow at shoulder height. Turn your body away from the affected shoulder until you feel a gentle stretch.",
+                repeat: "3 Times",
+                hold: "30 Seconds",
+                complete: "1 Set",
+                perform: "3 Times a Day",
+                hasVideo: false
             }
         ];
 
@@ -562,6 +586,8 @@
             let session1Complete = 0;
             // Count exercises completed for session 2 (at least 2 checkmarks)
             let session2Complete = 0;
+            // Count exercises completed for session 3 (at least 3 checkmarks)
+            let session3Complete = 0;
             
             Object.keys(todayData.completions).forEach(exerciseId => {
                 const count = todayData.completions[exerciseId];
@@ -571,10 +597,14 @@
                 if (count >= 2) {
                     session2Complete++;
                 }
+                if (count >= 3) {
+                    session3Complete++;
+                }
             });
             
             document.getElementById('session1Count').textContent = `${session1Complete}/${exercises.length}`;
             document.getElementById('session2Count').textContent = `${session2Complete}/${exercises.length}`;
+            document.getElementById('session3Count').textContent = `${session3Complete}/${exercises.length}`;
         }
 
         function renderExercises() {
